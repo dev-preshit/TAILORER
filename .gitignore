@@ -1,0 +1,67 @@
+# ==========================================
+# Python Byte-Compiled / Cache Files
+# ==========================================
+__pycache__/
+*.py[cod]
+*$py.class
+
+# ==========================================
+# Virtual Environments (Local dependencies)
+# ==========================================
+venv/
+.venv/
+env/
+.env/
+ENV/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# ==========================================
+# Django Specific Files & Folders
+# ==========================================
+# Local development database
+db.sqlite3
+*.sqlite3
+
+# Logs and runtime data
+*.log
+
+# Sensitive environment secrets
+.env
+.env.*
+local_settings.py
+
+# Collected static files (generate these on the server using collectstatic)
+staticfiles/
+static_root/
+
+# User-uploaded media assets
+media/
+
+# ==========================================
+# Testing & Code Quality
+# ==========================================
+.tox/
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ==========================================
+# IDEs and Text Editors
+# ==========================================
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# ==========================================
+# Operating System Files
+# ==========================================
+.DS_Store
+Thumbs.db

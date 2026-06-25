@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+
+<form action="{% url 'orderGender' %}" method='POST'>
+    {% csrf_token %}
+    <button type="submit" name='gender' value='male'>Male</button>
+    <button type="submit" name='gender' value='female'>Female</button>
+
+</form>
+
+{% endblock content %}

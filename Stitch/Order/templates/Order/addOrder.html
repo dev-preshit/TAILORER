@@ -1,0 +1,7 @@
+<form action="{%url 'addOrder' %}" method='POST'>
+    {% csrf_token %}
+    {{form.as_p}}
+    <button class="submit">Click Here</button>
+    <button class="submit">Cancel</button>
+
+</form>

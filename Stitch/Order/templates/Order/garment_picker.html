@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% for garment in garments %}
+<div>
+    {{garment.0}}
+    <button type="button">
+        <a href="{% url 'addCloth' garment.0%}">add new</a>
+    </button>
+</div>
+{% endfor %}
+
+{% endblock content %}

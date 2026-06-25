@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}My Site{% endblock %}</title>
+    <link href="https://getbootstrap.com/docs/4.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+    <nav>
+        <a href="{% url 'home' %}" class="brand">My Site</a>
+
+        <div class="nav-links">
+            {% if user.is_authenticated %}
+                <span class="nav-username">{{ user.username }}</span>
+                <a href="{% url 'addOrder' %}" class="btn btn-primary">Add Order</a>
+                <form method="post" action="{% url 'logout_view' %}" style="display: inline;">
+                    {% csrf_token %}  
+                    <button type="submit" class="btn btn-danger">Logout</button>
+                </form>
+            {% else %}
+                <a href="{% url 'login_view' %}" class="btn">Login</a>
+                <a href="{% url 'signup_view' %}" class="btn btn-primary">Sign Up</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <footer>
+        <div class="footer-top">
+            <div class="footer-brand">
+                <span class="brand">My Site</span>
+                <p>Building something great, one page at a time.</p>
+            </div>
+
+            <div class="footer-links">
+                <div class="footer-col">
+                    <h4>Navigate</h4>
+                    <a href="{% url 'home' %}">Home</a>
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'addOrder' %}">Add Order</a>
+                    {% endif %}
+                </div>
+
+                <div class="footer-col">
+                    <h4>Account</h4>
+                    {% if user.is_authenticated %}
+                        <span>Signed in as {{ user.username }}</span>
+                        <form method="post" action="{% url 'logout_view' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="footer-link-btn">Logout</button>
+                        </form>
+                    {% else %}
+                        <a href="{% url 'login_view' %}">Login</a>
+                        <a href="{% url 'signup_view' %}">Sign Up</a>
+                    {% endif %}
+                </div>
+
+                <div class="footer-col">
+                    <h4>Contact</h4>
+                    <a href="mailto:hello@mysite.com">hello@mysite.com</a>
+                    <a href="#">Support</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>&copy; {% now "Y" %} My Site. All rights reserved.</p>
+            <div class="footer-bottom-links">
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
+            </div>
+        </div>
+    </footer>
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://getbootstrap.com/docs/4.0/dist/js/bootstrap.min.js"></script>
+{% block scripts %}{% endblock scripts %}
+
+</body>
+</html>

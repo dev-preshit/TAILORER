@@ -1,0 +1,225 @@
+/* ── Auth Screen ── */
+.auth-body {
+    margin: 0;
+    min-height: 100vh;
+    background: #1a1a2e;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+.auth-screen {
+    width: 100%;
+    max-width: 920px;
+    min-height: 560px;
+    margin: 2.5rem;
+    display: grid;
+    grid-template-columns: 0.85fr 1.15fr;
+    background: #ffffff;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.45);
+}
+
+/* ── Dark editorial panel ── */
+.auth-panel-dark {
+    background: #1a1a2e;
+    color: #f4f1ea;
+    padding: 3rem 2.25rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 2rem;
+}
+
+.auth-brand-mark {
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 1.5rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    display: block;
+}
+
+.auth-brand-sub {
+    font-size: 12px;
+    color: #9a98ab;
+    letter-spacing: 0.08em;
+    margin-top: 4px;
+    display: block;
+}
+
+.auth-tape {
+    align-self: center;
+}
+
+.tape-rail {
+    stroke: #43405a;
+    stroke-width: 1.5;
+}
+
+.tape-ticks line {
+    stroke: #6f6c89;
+    stroke-width: 1;
+}
+
+.tape-num {
+    fill: #8784a0;
+    font-size: 9px;
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+}
+
+.auth-tagline {
+    font-size: 13px;
+    color: #9a98ab;
+    line-height: 1.6;
+    max-width: 230px;
+    margin: 0;
+}
+
+/* ── Light form panel ── */
+.auth-panel-light {
+    background: #FAF7F2;
+    padding: 3rem 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.auth-form-wrap {
+    width: 100%;
+    max-width: 320px;
+}
+
+.auth-heading {
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 1.65rem;
+    font-weight: 500;
+    color: #1a1a2e;
+    margin: 0 0 6px;
+}
+
+.auth-subheading {
+    font-size: 13px;
+    color: #76746e;
+    margin: 0 0 1.75rem;
+}
+
+/* ── Form fields (underline style, not boxed) ── */
+.auth-field {
+    margin-bottom: 1.25rem;
+}
+
+.auth-field label {
+    display: block;
+    font-size: 12px;
+    color: #76746e;
+    margin-bottom: 6px;
+}
+
+.auth-field input {
+    width: 100%;
+    padding: 9px 2px;
+    border: none;
+    border-bottom: 1.5px solid #d8d4c8;
+    background: transparent;
+    font-size: 14px;
+    font-family: inherit;
+    color: #1a1a2e;
+    border-radius: 0;
+    outline: none;
+    transition: border-color 0.15s;
+}
+
+.auth-field input:focus {
+    border-color: #534AB7;
+}
+
+.auth-field:has(.errorlist) input {
+    border-color: #A32D2D;
+}
+
+.auth-field .errorlist {
+    list-style: none;
+    color: #A32D2D;
+    font-size: 12px;
+    margin: 6px 0 0;
+    padding: 0;
+}
+
+.auth-submit {
+    width: 100%;
+    background: #534AB7;
+    color: #ffffff;
+    border: none;
+    padding: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: inherit;
+    margin-top: 0.5rem;
+    transition: background 0.15s;
+}
+
+.auth-submit:hover {
+    background: #3C3489;
+}
+
+.auth-switch {
+    font-size: 13px;
+    color: #76746e;
+    margin-top: 1.5rem;
+}
+
+.auth-link {
+    color: #534AB7;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.auth-link:hover {
+    text-decoration: underline;
+}
+
+.auth-alert {
+    background: #FCEBEB;
+    border: 1px solid #F09595;
+    color: #A32D2D;
+    font-size: 13px;
+    padding: 10px 14px;
+    border-radius: 6px;
+    margin-bottom: 1.25rem;
+}
+
+/* ── Responsive ── */
+@media (max-width: 760px) {
+    .auth-screen {
+        grid-template-columns: 1fr;
+        margin: 0;
+        border-radius: 0;
+        min-height: 100vh;
+    }
+
+    .auth-panel-dark {
+        padding: 2rem 1.75rem;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+    }
+
+    .auth-tape,
+    .auth-tagline {
+        display: none;
+    }
+
+    .auth-panel-light {
+        padding: 2.5rem 1.75rem;
+        flex: 1;
+    }
+
+    .auth-body {
+        align-items: flex-start;
+    }
+}
