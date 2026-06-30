@@ -39,6 +39,8 @@ materialType = [
 # Create your models here.
 class Options(models.Model):
     text = models.TextField(max_length=200)
+    upper_body = models.ForeignKey('UpperBody', on_delete=models.CASCADE, null=True, blank=True, related_name='requirements')
+    lower_body = models.ForeignKey('LowerBody', on_delete=models.CASCADE, null=True, blank=True, related_name='requirements')
 
     def __str__(self):
         return self.text
@@ -53,7 +55,6 @@ class LowerBody(models.Model):
     pantBottom = models.IntegerField(default=0)
     uCrouch = models.IntegerField(default=0)
     clothType = models.CharField(max_length=20, choices=lowerBodyChoice, default=" ")
-    requirements = models.ForeignKey(Options, on_delete = models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return self.clothType
@@ -79,7 +80,6 @@ class UpperBody(models.Model):
     pocket = models.BooleanField(default = False)
     button = models.CharField(max_length=20, choices=buttonChoice, default="Normal")
     sleeveType = models.CharField(max_length=20, choices=sleeveChoice, default="Full")
-    requirments = models.ForeignKey(Options, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return self.clothType
@@ -99,4 +99,3 @@ class Inventory(models.Model):
     
     def __str__(self):
         return self.customer.name
-    

@@ -1,7 +1,8 @@
 from django import forms
+from django.forms import inlineformset_factory
 
 from Cloth.constants import GARMENT_TYPES
-from .models import LowerBody, UpperBody
+from .models import UpperBody, LowerBody, Options
 
 
 class UpperBodyForm(forms.ModelForm):
@@ -41,3 +42,22 @@ class LowerBodyForm(forms.ModelForm):
         for field in list(self.fields):
             if field not in allowed and field != 'clothType':  
                 del self.fields[field]
+
+
+UpperOptionsFormSet = inlineformset_factory(
+    UpperBody,
+    Options,
+    fk_name='upper_body',
+    fields=['text'],
+    extra=1,
+    can_delete=True,
+)
+
+LowerOptionsFormSet = inlineformset_factory(
+    LowerBody,
+    Options,
+    fk_name='lower_body',
+    fields=['text'],
+    extra=1,
+    can_delete=True,
+)

@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404, redirect, render
 
 from Order.models import Order
-from Cloth.forms import LowerBodyForm, UpperBodyForm
+from Cloth.forms import LowerBodyForm, LowerOptionsFormSet, UpperBodyForm, UpperOptionsFormSet
 from .forms import OrderForm
 from Cloth.constants import GARMENT_TYPES
 
@@ -65,22 +65,31 @@ def garmentPicker(request):
     }
     return render(request, 'Order/garment_picker.html', context=context)
 
-def addCloth(request, cloth):    
+def addCloth(request, cloth):
     region = getRegionByGarment(cloth)
-    print(region)
     draft = request.session.get('draft_gender')
+
+    FormSetClass = UpperOptionsFormSet if region == 'upper' else LowerOptionsFormSet
+
     if request.method == 'POST':
         form = get_garment_form(cloth, region, data=request.POST)
-        if form.is_valid():
-            form.save()
+        formset = FormSetClass(request.POST)
+
+        if form.is_valid() and formset.is_valid():
+            garment = form.save()             
+            formset.instance = garment         
+            formset.save()                      
             return redirect('garmentPicker')
     else:
         form = get_garment_form(cloth, region)
+        formset = FormSetClass()
+
     context = {
-        'cloth' : cloth,
-        'form' : form,
+        'cloth': cloth,
+        'form': form,
+        'formset': formset,
     }
-    return render(request, 'Order/addMeasurement.html',context=context)
+    return render(request, 'Order/addMeasurement.html', context=context)
         
 
 def get_garment_form(cloth_type, region, data=None):

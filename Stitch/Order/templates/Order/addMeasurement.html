@@ -3,11 +3,22 @@
 
 {% block content %}
 
-    <form action="{% url 'addCloth' cloth%}" method="POST">
-        {% csrf_token %}
-        {{form.as_p}}
-        <button type="submit">ADD</button>
-        <button >Cancle</button>
-    </form>
+    <form method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
 
+    <h3>Requirements</h3>
+    {{ formset.management_form }}
+
+    {% for requirement_form in formset %}
+        <div class="requirement-row">
+            {{ requirement_form.text }}
+            {% if requirement_form.instance.pk %}
+                <label>{{ requirement_form.DELETE }} Delete</label>
+            {% endif %}
+        </div>
+    {% endfor %}
+
+        <button type="submit">Save</button>
+    </form>
 {% endblock content %}
