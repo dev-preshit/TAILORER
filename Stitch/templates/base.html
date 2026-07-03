@@ -18,7 +18,7 @@
         <div class="nav-links">
             {% if user.is_authenticated %}
                 <span class="nav-username">{{ user.username }}</span>
-                <a href="{% url 'addOrder' %}" class="btn btn-primary">Add Order</a>
+                <a href="{% url 'orderGender' %}" class="btn btn-primary">Add Order</a>
                 <form method="post" action="{% url 'logout_view' %}" style="display: inline;">
                     {% csrf_token %}  
                     <button type="submit" class="btn btn-danger">Logout</button>

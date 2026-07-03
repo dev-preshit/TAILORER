@@ -2,6 +2,5 @@
     {% csrf_token %}
     {{form.as_p}}
     <button class="submit">Click Here</button>
-    <button class="submit">Cancel</button>
-
+    <a href="{% url 'home' %}"><button type="button">Cancel</button></a>
 </form>
