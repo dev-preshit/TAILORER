@@ -95,6 +95,9 @@ def addCloth(request, cloth):
             garment = form.save()             
             formset.instance = garment         
             formset.save()
+            request.session.pop('draft_order', None)
+            request.session.pop('garment', None)
+            request.session.pop('gender_draft', None)
             print(garment.id)
             request.session['garment'] = {
                 'region' : 'upperBody' if region == 'upper' else 'lowerBody',
@@ -111,6 +114,12 @@ def addCloth(request, cloth):
         'formset': formset,
     }
     return render(request, 'Order/addMeasurement.html', context=context)
+
+def cancelOrder(request):
+    request.session.pop('draft_order', None)
+    request.session.pop('garment', None)
+    request.session.pop('gender_draft', None)
+    return redirect('home')
         
 
 def get_garment_form(cloth_type, region, data=None):

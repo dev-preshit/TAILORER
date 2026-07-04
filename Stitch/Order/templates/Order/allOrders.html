@@ -1,7 +1,85 @@
 {% extends "base.html" %}
 
 {% block content %}
-{% for order in orders%}
-    {{order}}
-{% endfor %}
+
+<div class="col-md-9">
+                <h1>All Order</h1>
+                <a href="{% url 'addOrder' %}" class="btn btn-dark text-light float-right mb-2">Add Order</a>
+                <table class="table table-hover">
+                <thead>
+                    <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Full Name</th>
+                    <th scope="col">Number</th>
+                    <th scope="col">Gender</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Days</th>
+                    <th scope="col">Due</th>
+                    <th scope="col">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for order in orders %}
+                    <tr>
+                    <th scope="row">{{forloop.counter}}</th>
+                    <td><a href="{% url 'order' order.id %}">{{order.customer.name}} </a></td>
+                    <td>{{order.customer.phone}}</td>
+                    <td>{{order.customer.gender}}</td>
+                    <td>{{order.status}}</td>
+                    <td>{{order.days}}</td>
+                    <td>{{order.out_time}}</td>
+                    <td>
+                        <a href="{%url 'editCustomer' order.id%}" class="btn btn-link p-0"><i class="fa fa-edit text-success"></i></a>
+                        &nbsp;
+                        <button class="btn btn-link p-0 delete-btn"
+                            data-toggle="modal"
+                            data-target="#deleteModal"
+                            data-url="{% url 'deleteCustomer' order.id %}"
+                            data-name="{{order.name}}">
+                        <i class="fa fa-trash text-danger"></i>
+                        </button>
+                    </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+                </table>
+            </div>
+            <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Confirm Delete</h5>
+                            <button type="button" class="close" data-dismiss="modal">
+                                <span>&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <!-- category name will be injected here -->
+                            Are you sure you want to delete "<span id="categoryName"></span>"?
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                            <!-- ✅ This link's href will be set dynamically -->
+                            <a href="deleteUrl" id="confirmDeleteBtn" class="btn btn-danger">Delete</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
 {% endblock content %}
+{% block scripts %}
+<script>
+    $(document).ready(function () {
+        $('.delete-btn').on('click', function () {
+            var deleteUrl = $(this).data('url');
+            var catName = $(this).data('name');
+
+            console.log("URL:", deleteUrl);   // ← add this
+            console.log("Name:", catName);    // ← add this
+
+            $('#confirmDeleteBtn').attr('href', deleteUrl);
+            $('#categoryName').text(catName);
+        });
+    });
+</script>
+{% endblock scripts %}
