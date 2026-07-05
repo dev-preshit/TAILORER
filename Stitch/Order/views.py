@@ -9,7 +9,19 @@ from .forms import OrderForm
 from Cloth.constants import GARMENT_TYPES
 
 
-# Create your views here.
+def home(request):
+    from AuthApp.models import Customer
+
+    orders = Order.objects.select_related('customer').order_by('-in_time')
+    context = {
+        'order_count': orders.count(),
+        'urgent_count': orders.filter(status='Urgent').count(),
+        'customer_count': Customer.objects.count(),
+        'recent_orders': orders[:5],
+    }
+    return render(request, 'home.html', context)
+
+
 def getAllOrders(request):
     orders = Order.objects.all()
     return render(request, 'Order/allOrders.html', context= {'orders' : orders})
@@ -77,7 +89,6 @@ def garmentPicker(request):
         if draft_garment:
             draft[draft_garment['region']] = int(draft_garment['garment'])
         form = OrderForm(initial=draft)
-        print(form)
     context = {
         'garments' : garments,
         'form' : form,
@@ -95,10 +106,10 @@ def addCloth(request, cloth):
             garment = form.save()             
             formset.instance = garment         
             formset.save()
-            request.session.pop('draft_order', None)
-            request.session.pop('garment', None)
-            request.session.pop('gender_draft', None)
-            print(garment.id)
+            # request.session.pop('draft_order', None)
+            # request.session.pop('garment', None)
+            # request.session.pop('gender_draft', None)
+            # print(garment.id)
             request.session['garment'] = {
                 'region' : 'upperBody' if region == 'upper' else 'lowerBody',
                 'garment': garment.id,

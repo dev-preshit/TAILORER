@@ -1,4 +1,94 @@
 {% extends "base.html" %}
-{% block content %}
 
+{% block title %}Stitch · Order ledger{% endblock %}
+
+{% block content %}
+<section class="dashboard" aria-labelledby="dashboard-heading">
+    <header class="dashboard-header">
+        <h1 id="dashboard-heading" class="page-title">
+            {% if user.is_authenticated %}
+                Welcome back, {{ user.username }}
+            {% else %}
+                Stitch
+            {% endif %}
+        </h1>
+        <p class="page-lead">
+            {% if user.is_authenticated %}
+                Your tailoring shop ledger — orders, customers, and due dates in one place.
+            {% else %}
+                A small-shop order ledger for customers, garments, and due dates.
+            {% endif %}
+        </p>
+    </header>
+
+    {% if user.is_authenticated %}
+        <div class="dashboard-stats" role="list">
+            <article class="stat-card" role="listitem">
+                <span class="stat-label">Open orders</span>
+                <span class="stat-value">{{ order_count }}</span>
+            </article>
+            <article class="stat-card stat-card--urgent" role="listitem">
+                <span class="stat-label">Urgent</span>
+                <span class="stat-value">{{ urgent_count }}</span>
+            </article>
+            <article class="stat-card" role="listitem">
+                <span class="stat-label">Customers</span>
+                <span class="stat-value">{{ customer_count }}</span>
+            </article>
+        </div>
+
+        <div class="dashboard-actions">
+            <a href="{% url 'orderGender' %}" class="action-card action-card--primary">
+                <span class="action-card-label">New order</span>
+                <span class="action-card-desc">Start the measurement flow</span>
+            </a>
+            <a href="{% url 'allOrders' %}" class="action-card">
+                <span class="action-card-label">All orders</span>
+                <span class="action-card-desc">Browse the full ledger</span>
+            </a>
+            <a href="{% url 'allCustomer' %}" class="action-card">
+                <span class="action-card-label">Customers</span>
+                <span class="action-card-desc">Manage client records</span>
+            </a>
+        </div>
+
+        {% if recent_orders %}
+            <section class="dashboard-recent" aria-labelledby="recent-heading">
+                <div class="dashboard-recent-header">
+                    <h2 id="recent-heading" class="section-heading">Recent orders</h2>
+                    <a href="{% url 'allOrders' %}" class="text-link">View all</a>
+                </div>
+                <ul class="recent-list">
+                    {% for order in recent_orders %}
+                        <li class="recent-item">
+                            <a href="{% url 'order' order.id %}" class="recent-item-link">
+                                <span class="recent-customer">{{ order.customer.name }}</span>
+                                <span class="recent-meta">
+                                    <span class="status-badge status-{{ order.status|lower }}">{{ order.status }}</span>
+                                    {% if order.out_time %}
+                                        <span class="recent-due">Due <time datetime="{{ order.out_time|date:'c' }}">{{ order.out_time|date:"M j" }}</time></span>
+                                    {% endif %}
+                                </span>
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </section>
+        {% else %}
+            <div class="dashboard-empty">
+                <p class="dashboard-empty-text">No orders yet. Start with a new measurement.</p>
+                <a href="{% url 'orderGender' %}" class="btn btn-primary">Add order</a>
+            </div>
+        {% endif %}
+
+    {% else %}
+        <div class="dashboard-guest">
+            <p class="dashboard-guest-text">Sign in to manage orders, customers, and due dates.</p>
+            <div class="dashboard-guest-actions">
+                <a href="{% url 'login_view' %}" class="btn btn-secondary">Log in</a>
+                <a href="{% url 'signup_view' %}" class="btn btn-primary">Sign up</a>
+            </div>
+        </div>
+    {% endif %}
+</section>
 {% endblock content %}

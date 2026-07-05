@@ -4,7 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}My Site{% endblock %}</title>
+    <title>{% block title %}Stitch{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link href="https://getbootstrap.com/docs/4.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
@@ -13,14 +16,15 @@
 <body>
 
     <nav>
-        <a href="{% url 'home' %}" class="brand">My Site</a>
+        <a href="{% url 'home' %}" class="brand">Stitch</a>
 
         <div class="nav-links">
             {% if user.is_authenticated %}
                 <span class="nav-username">{{ user.username }}</span>
+                <a href="{% url 'allOrders' %}" class="btn">Orders</a>
                 <a href="{% url 'orderGender' %}" class="btn btn-primary">Add Order</a>
-                <form method="post" action="{% url 'logout_view' %}" style="display: inline;">
-                    {% csrf_token %}  
+                <form method="post" action="{% url 'logout_view' %}" class="nav-logout-form">
+                    {% csrf_token %}
                     <button type="submit" class="btn btn-danger">Logout</button>
                 </form>
             {% else %}
@@ -38,8 +42,8 @@
     <footer>
         <div class="footer-top">
             <div class="footer-brand">
-                <span class="brand">My Site</span>
-                <p>Building something great, one page at a time.</p>
+                <span class="brand">Stitch</span>
+                <p>Every measurement, every order, kept to the centimetre.</p>
             </div>
 
             <div class="footer-links">
@@ -47,7 +51,9 @@
                     <h4>Navigate</h4>
                     <a href="{% url 'home' %}">Home</a>
                     {% if user.is_authenticated %}
+                        <a href="{% url 'allOrders' %}">All Orders</a>
                         <a href="{% url 'addOrder' %}">Add Order</a>
+                        <a href="{% url 'allCustomer' %}">Customers</a>
                     {% endif %}
                 </div>
 
@@ -74,7 +80,7 @@
         </div>
 
         <div class="footer-bottom">
-            <p>&copy; {% now "Y" %} My Site. All rights reserved.</p>
+            <p>&copy; {% now "Y" %} Stitch. All rights reserved.</p>
             <div class="footer-bottom-links">
                 <a href="#">Privacy Policy</a>
                 <a href="#">Terms of Service</a>
