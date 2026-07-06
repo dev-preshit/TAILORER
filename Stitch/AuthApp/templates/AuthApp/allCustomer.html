@@ -1,65 +1,87 @@
 {% extends "base.html" %}
 
-{% block content %}
+{% block title %}All customers · Stitch{% endblock %}
 
-<div class="col-md-9">
-                <h1>All Customer</h1>
-                <a href="{% url 'addOrder' %}" class="btn btn-dark text-light float-right mb-2">Add Order</a>
-                <table class="table table-hover">
+{% block content %}
+<section class="fade-in-up" aria-labelledby="customers-heading">
+    <div class="page-header">
+        <div>
+            <h1 id="customers-heading" class="page-title">All customers</h1>
+            <p class="page-lead">Every client on file, with their measurements on record.</p>
+        </div>
+        <a href="{% url 'addCustomer' %}" class="btn btn-primary">
+            <i class="fa fa-plus" aria-hidden="true"></i> Add Customer
+        </a>
+    </div>
+
+    {% if customers %}
+        <div class="ledger-table-wrap">
+            <table class="ledger-table">
                 <thead>
                     <tr>
-                    <th scope="col">#</th>
-                    <th scope="col">Full Name</th>
-                    <th scope="col">User Name</th>
-                    <th scope="col">Email</th>
-                    <th scope="col">Action</th>
+                        <th scope="col">#</th>
+                        <th scope="col">Full name</th>
+                        <th scope="col">Phone</th>
+                        <th scope="col">Gender</th>
+                        <th scope="col">Action</th>
                     </tr>
                 </thead>
                 <tbody>
                 {% for customer in customers %}
-                    <tr>
-                    <th scope="row">{{forloop.counter}}</th>
-                    <td>{{customer.name}}</td>
-                    <td>{{customer.phone}}</td>
-                    <td>{{customer.gender}}</td>
-                    <td>
-                        <a href="{%url 'editCustomer' customer.id%}" class="btn btn-link p-0"><i class="fa fa-edit text-success"></i></a>
-                        &nbsp;
-                        <button class="btn btn-link p-0 delete-btn"
-                            data-toggle="modal"
-                            data-target="#deleteModal"
-                            data-url="{% url 'deleteCustomer' customer.id %}"
-                            data-name="{{customer.name}}">
-                        <i class="fa fa-trash text-danger"></i>
-                        </button>
-                    </td>
+                    <tr style="animation-delay: {{ forloop.counter0 }}0ms;">
+                        <td class="ledger-row-index">{{ forloop.counter }}</td>
+                        <td class="customer-name">{{ customer.name }}</td>
+                        <td class="ledger-mono">{{ customer.phone }}</td>
+                        <td>{{ customer.gender }}</td>
+                        <td>
+                            <div class="action-btns">
+                                <a href="{% url 'editCustomer' customer.id %}" class="btn-sm" title="Edit customer">
+                                    <i class="fa fa-edit" aria-hidden="true"></i>
+                                </a>
+                                <button type="button" class="btn-sm btn-delete delete-btn"
+                                    data-toggle="modal"
+                                    data-target="#deleteModal"
+                                    data-url="{% url 'deleteCustomer' customer.id %}"
+                                    data-name="{{ customer.name }}">
+                                    <i class="fa fa-trash" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                        </td>
                     </tr>
                 {% endfor %}
                 </tbody>
-                </table>
+            </table>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-icon"><i class="fa fa-users" aria-hidden="true"></i></div>
+            <h3>No customers yet</h3>
+            <p class="text-muted mb-3">Customers are added automatically when you place an order.</p>
+            <a href="{% url 'addCustomer' %}" class="btn btn-primary">Add customer</a>
+        </div>
+    {% endif %}
+</section>
+
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm delete</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span aria-hidden="true">&times;</span>
+                </button>
             </div>
-            <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog">
-                <div class="modal-dialog" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">Confirm Delete</h5>
-                            <button type="button" class="close" data-dismiss="modal">
-                                <span>&times;</span>
-                            </button>
-                        </div>
-                        <div class="modal-body">
-                            <!-- category name will be injected here -->
-                            Are you sure you want to delete "<span id="categoryName"></span>"?
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                            <!-- ✅ This link's href will be set dynamically -->
-                            <a href="deleteUrl" id="confirmDeleteBtn" class="btn btn-danger">Delete</a>
-                        </div>
-                    </div>
-                </div>
+            <div class="modal-body">
+                Are you sure you want to delete "<span id="categoryName"></span>"? This can't be undone.
             </div>
-            
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <a href="deleteUrl" id="confirmDeleteBtn" class="btn btn-danger">Delete</a>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock content %}
 {% block scripts %}
 <script>
@@ -67,9 +89,6 @@
         $('.delete-btn').on('click', function () {
             var deleteUrl = $(this).data('url');
             var catName = $(this).data('name');
-
-            console.log("URL:", deleteUrl);   // ← add this
-            console.log("Name:", catName);    // ← add this
 
             $('#confirmDeleteBtn').attr('href', deleteUrl);
             $('#categoryName').text(catName);

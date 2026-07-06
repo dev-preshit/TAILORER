@@ -3,9 +3,10 @@ from datetime import timedelta
 
 from django.shortcuts import get_object_or_404, redirect, render
 
+from AuthApp.models import Customer
 from Order.models import Order
 from Cloth.forms import LowerBodyForm, LowerOptionsFormSet, UpperBodyForm, UpperOptionsFormSet
-from .forms import OrderForm
+from .forms import OrderFormAddOrder, OrderFormAddGarment
 from Cloth.constants import GARMENT_TYPES
 
 
@@ -43,31 +44,48 @@ def orderGender(request):
         return redirect('addOrder')
     return render(request, "Order/gender.html")
     
+from django.core.paginator import Paginator
+from django.db.models import Q
+
 def addOrder(request):
     if request.method == 'POST':
-        Customer = request.POST.get('customer')
+        customer_id = request.POST.get('customer')
         Upper = request.POST.get('upperBody')
         Lower = request.POST.get('lowerBody')
         status = request.POST.get('status')
         days = request.POST.get('days')
         outdate = request.POST.get('out_time')
-        
-        gender_draft = request.session.get('gender_draft',{'gender':'male'})
 
+        gender_draft = request.session.get('gender_draft', {'gender': 'male'})
         request.session['draft_order'] = {
-            'gender' : gender_draft['gender'],
-            'customer' : int(Customer),
-            'upperBody':Upper,
-            'lowerBody':Lower,
-            'status':status,
-            'days':days,
-            'out_time':outdate,
-            } 
-
+            'gender': gender_draft['gender'],
+            'customer': int(customer_id),
+            'upperBody': Upper,
+            'lowerBody': Lower,
+            'status': status,
+            'days': days,
+            'out_time': outdate,
+        }
         return redirect('garmentPicker')
-    
-    form = OrderForm()
-    return render(request,"Order/addOrder.html",{'form' : form})
+
+    search_query = request.GET.get('q', '').strip()
+    customers_qs = Customer.objects.all().order_by('name')
+
+    if search_query:
+        customers_qs = customers_qs.filter(
+            Q(name__icontains=search_query) | Q(phone__icontains=search_query)
+        )
+
+    paginator = Paginator(customers_qs, 8)  # 8 customers per page
+    page_obj = paginator.get_page(request.GET.get('page', 1))
+
+    form = OrderFormAddOrder()
+    context = {
+        'form': form,
+        'page_obj': page_obj,
+        'search_query': search_query,
+    }
+    return render(request, "Order/addOrder.html", context=context)
 
 def garmentPicker(request):
     draft = request.session.get('draft_order',{})
@@ -75,7 +93,7 @@ def garmentPicker(request):
 
     if request.method == 'POST':
         print("POST")
-        order = OrderForm(request.POST)
+        order = OrderFormAddGarment(request.POST)
         if order.is_valid():
             obj = order.save(commit=False)
             obj.out_time = compute_out_time(obj.days)
@@ -88,7 +106,7 @@ def garmentPicker(request):
         draft_garment = request.session.get('garment',{})
         if draft_garment:
             draft[draft_garment['region']] = int(draft_garment['garment'])
-        form = OrderForm(initial=draft)
+        form = OrderFormAddGarment(initial=draft)
     context = {
         'garments' : garments,
         'form' : form,

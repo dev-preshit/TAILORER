@@ -2,7 +2,7 @@
 
 {% block content %}
 
-    <form action="{% url form_action%}" method='POST'>
+    <form action="{% url form_action pk=pk%}" method='POST'>
         {% csrf_token %}
         {{form.as_p}}
         <button type="submit" class="auth-submit">Add Customer</button>

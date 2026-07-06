@@ -1,24 +1,74 @@
 {% extends "base.html" %}
 
+{% block title %}Choose garments · Stitch{% endblock %}
+
 {% block content %}
-<div class="container">
-    <div>
-        <form action="{% url 'garmentPicker' %}" method=POST>
-            {% csrf_token %}
-            {{form.as_p}}
-            <button type="submit">Save Order</button>
-            <a href="{% url 'cancelOrder' %}"><button type="button">Cancel</button></a>
-        </form>
-    </div>
-    <div>
-        {% for garment in garments %}
-        <div>
-            {{garment.0}}
-            <button type="button">
-                <a href="{% url 'addCloth' garment.0%}">add new</a>
-            </button>
+<section class="fade-in-up" aria-labelledby="garments-heading">
+
+    <nav class="flow-tape" aria-label="Order progress">
+        <div class="flow-step is-complete">
+            <span class="flow-dot"><i class="fa fa-check" aria-hidden="true"></i></span>
+            <span class="flow-label">Gender</span>
         </div>
-        {% endfor %}
+        <div class="flow-step is-complete">
+            <span class="flow-dot"><i class="fa fa-check" aria-hidden="true"></i></span>
+            <span class="flow-label">Details</span>
+        </div>
+        <div class="flow-step is-current">
+            <span class="flow-dot">3</span>
+            <span class="flow-label">Garments</span>
+        </div>
+        <div class="flow-step">
+            <span class="flow-dot">4</span>
+            <span class="flow-label">Confirm</span>
+        </div>
+    </nav>
+
+    <header class="form-card-header">
+        <h1 id="garments-heading" class="page-title">Pick the garments</h1>
+        <p class="page-lead">Add measurements for each garment, then save the order.</p>
+    </header>
+
+    <div class="garment-flow-grid">
+        <div class="garment-picker-panel">
+            <h2 class="section-heading mb-2">Order summary</h2>
+            <form action="{% url 'garmentPicker' %}" method="POST">
+                {% csrf_token %}
+                {% for field in form %}
+                    <div class="field-underline">
+                        {{ field.label_tag }}
+                        {{ field }}
+                        {% if field.errors %}
+                            <ul class="errorlist">
+                                {% for error in field.errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+
+                <div class="form-actions">
+                    <a href="{% url 'cancelOrder' %}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">Save order</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="garment-picker-panel">
+            <h2 class="section-heading mb-2">Available garments</h2>
+            <div class="garment-list">
+                {% for garment, region in garments %}
+                    <a href="{% url 'addCloth' garment %}" class="garment-card">
+                        <span class="garment-card-region">{{ region }} body</span>
+                        <span class="garment-card-name">{{ garment }}</span>
+                        <span class="garment-card-cta">Add measurements →</span>
+                    </a>
+                {% empty %}
+                    <p class="page-lead">No garments available for this gender.</p>
+                {% endfor %}
+            </div>
+        </div>
     </div>
-</div>
+</section>
 {% endblock content %}

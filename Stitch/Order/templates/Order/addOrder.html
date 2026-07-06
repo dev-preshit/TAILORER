@@ -1,6 +1,118 @@
-<form action="{%url 'addOrder' %}" method='POST'>
-    {% csrf_token %}
-    {{form.as_p}}
-    <button class="submit">Click Here</button>
-    <a href="{% url 'cancelOrder' %}"><button type="button">Cancel</button></a> 
-</form>
+{% extends "base.html" %}
+
+{% block title %}New order · Stitch{% endblock %}
+
+{% block content %}
+<section class="fade-in-up" aria-labelledby="details-heading">
+
+    <nav class="flow-tape" aria-label="Order progress">
+        <div class="flow-step is-complete">
+            <span class="flow-dot"><i class="fa fa-check" aria-hidden="true"></i></span>
+            <span class="flow-label">Gender</span>
+        </div>
+        <div class="flow-step is-current">
+            <span class="flow-dot">2</span>
+            <span class="flow-label">Details</span>
+        </div>
+        <div class="flow-step">
+            <span class="flow-dot">3</span>
+            <span class="flow-label">Garments</span>
+        </div>
+        <div class="flow-step">
+            <span class="flow-dot">4</span>
+            <span class="flow-label">Confirm</span>
+        </div>
+    </nav>
+
+    <div class="form-card">
+        <header class="form-card-header">
+            <h1 id="details-heading" class="page-title">Order details</h1>
+            <p class="page-lead">Who's this order for, and when is it due?</p>
+        </header>
+
+        {% if form.non_field_errors %}
+            <div class="alert alert-error">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <form action="{% url 'addOrder' %}" method="POST">
+            {% csrf_token %}
+            {% for field in form %}
+                <div class="field-underline">
+                    {{ field.label_tag }}
+                    {{ field }}
+                    {% if field.help_text %}
+                        <p class="page-lead" style="margin-top:6px;">{{ field.help_text }}</p>
+                    {% endif %}
+                    {% if field.errors %}
+                        <ul class="errorlist">
+                            {% for error in field.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+            <div class="form-actions">
+                <a href="{% url 'cancelOrder' %}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">Continue</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="customer-pannel">
+    <form method="GET" action="{% url 'addOrder' %}" class="customer-search">
+        <input
+            type="search"
+            name="q"
+            placeholder="Search by name or number..."
+            value="{{ search_query }}"
+        >
+        <button type="submit" class="btn btn-secondary">Search</button>
+    </form>
+
+    <div class="customer-list">
+        {% for customer in page_obj %}
+            <div
+                class="customer-card"
+                data-customer-id="{{ customer.id }}"
+                onclick="selectCustomer(this)"
+            >
+                <span class="customer-name">{{ customer.name }}</span>
+                <span class="customer-phone">{{ customer.phone }}</span>
+            </div>
+        {% empty %}
+            <p>No customers found.</p>
+        {% endfor %}
+    </div>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+    <div class="pagination">
+        {% if page_obj.has_previous %}
+            <a href="?q={{ search_query }}&page={{ page_obj.previous_page_number }}">&laquo; Prev</a>
+        {% endif %}
+        <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+            <a href="?q={{ search_query }}&page={{ page_obj.next_page_number }}">Next &raquo;</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function selectCustomer(el) {
+    document.querySelectorAll('.customer-card').forEach(c => c.classList.remove('is-selected'));
+    el.classList.add('is-selected');
+    document.getElementById('id_customer_selected').value = el.dataset.customerId;
+}
+
+document.querySelector('form[action="{% url "addOrder" %}"]').addEventListener('submit', function(e) {
+    const val = document.getElementById('id_customer_selected').value;
+    if (!val) {
+        e.preventDefault();
+        alert('Please select a customer first.');
+    }
+});
+</script>   
+</section>
+{% endblock content %}

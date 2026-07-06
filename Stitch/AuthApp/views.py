@@ -77,7 +77,7 @@ def editCustomer(request, pk):
         'form_action': 'editCustomer',
         'pk': pk  
     }
-    return render(request, 'AuthApp/addCustomer.html', context)
+    return render(request, 'AuthApp/editCustomer.html', context)
 
 def deleteCustomer(request, pk):
     customer = get_object_or_404(Customer,pk=pk)

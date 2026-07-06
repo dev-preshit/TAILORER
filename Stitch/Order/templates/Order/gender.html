@@ -1,13 +1,52 @@
 {% extends "base.html" %}
 
+{% block title %}New order · Stitch{% endblock %}
 
 {% block content %}
+<section class="fade-in-up" aria-labelledby="gender-heading">
 
-<form action="{% url 'orderGender' %}" method='POST'>
-    {% csrf_token %}
-    <button type="submit" name='gender' value='male'>Male</button>
-    <button type="submit" name='gender' value='female'>Female</button>
+    <nav class="flow-tape" aria-label="Order progress">
+        <div class="flow-step is-current">
+            <span class="flow-dot">1</span>
+            <span class="flow-label">Gender</span>
+        </div>
+        <div class="flow-step">
+            <span class="flow-dot">2</span>
+            <span class="flow-label">Details</span>
+        </div>
+        <div class="flow-step">
+            <span class="flow-dot">3</span>
+            <span class="flow-label">Garments</span>
+        </div>
+        <div class="flow-step">
+            <span class="flow-dot">4</span>
+            <span class="flow-label">Confirm</span>
+        </div>
+    </nav>
 
-</form>
+    <header class="form-card-header">
+        <h1 id="gender-heading" class="page-title">Start a new order</h1>
+        <p class="page-lead">First, who is this order for?</p>
+    </header>
 
+    <form action="{% url 'orderGender' %}" method="POST" class="gender-choice-form">
+        {% csrf_token %}
+        <div class="gender-choice-grid">
+            <button type="submit" name="gender" value="male" class="gender-choice-card">
+                <i class="fa fa-male" aria-hidden="true"></i>
+                <span class="gender-choice-label">Male</span>
+                <span class="gender-choice-desc">Shirts, kurtas, trousers &amp; more</span>
+            </button>
+            <button type="submit" name="gender" value="female" class="gender-choice-card">
+                <i class="fa fa-female" aria-hidden="true"></i>
+                <span class="gender-choice-label">Female</span>
+                <span class="gender-choice-desc">Kurtis, gowns, skirts &amp; more</span>
+            </button>
+        </div>
+    </form>
+
+    <div class="text-center mt-3">
+        <a href="{% url 'home' %}" class="btn btn-secondary">Cancel</a>
+    </div>
+</section>
 {% endblock content %}
