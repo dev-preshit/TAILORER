@@ -14,5 +14,5 @@ class CustomerForm(forms.ModelForm):
     
     class Meta:
         model = Customer
-        fields = '__all__'
+        fields = ['name', 'phone']
 

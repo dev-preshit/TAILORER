@@ -1,0 +1,34 @@
+<div class="customer-list" id="customer-list">
+    {% for customer in page_obj %}
+        <div
+            class="customer-row"
+            data-customer-id="{{ customer.id }}"
+            data-customer-name="{{ customer.name }}"
+            data-customer-phone="{{ customer.phone }}"
+            tabindex="0"
+            role="button"
+        >
+            <span class="customer-name">{{ customer.name }}</span>
+            <span class="customer-phone">{{ customer.phone }}</span>
+        </div>
+    {% empty %}
+        <div class="customer-empty">
+            <p>No customers found{% if search_query %} for "{{ search_query }}"{% endif %}.</p>
+            {% if search_query %}
+                <p class="page-lead">Add a phone number on the left and hit Continue to add them as new.</p>
+            {% endif %}
+        </div>
+    {% endfor %}
+</div>
+
+{% if page_obj.paginator.num_pages > 1 %}
+<div class="pagination">
+    {% if page_obj.has_previous %}
+        <a href="?q={{ search_query }}&page={{ page_obj.previo  us_page_number }}">&laquo; Prev</a>
+    {% endif %}
+    <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+        <a href="?q={{ search_query }}&page={{ page_obj.next_page_number }}">Next &raquo;</a>
+    {% endif %}
+</div>
+{% endif %}

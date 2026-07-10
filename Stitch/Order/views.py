@@ -1,3 +1,4 @@
+from django.http import JsonResponse
 from django.utils import timezone
 from datetime import timedelta
 from django.core.paginator import Paginator
@@ -7,6 +8,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from AuthApp.models import Customer
 from Order.models import Order
 from Cloth.forms import LowerBodyForm, LowerOptionsFormSet, UpperBodyForm, UpperOptionsFormSet
+from AuthApp.forms import CustomerForm
 from .forms import OrderFormAddOrder, OrderFormAddGarment
 from Cloth.constants import GARMENT_TYPES
 
@@ -46,58 +48,103 @@ def orderGender(request):
     return render(request, "Order/gender.html")
     
 
-
+'''
 def addOrder(request):
-    if request.method == 'POST':
-        customer_id = request.POST.get('customer')
-        Upper = request.POST.get('upperBody')
-        Lower = request.POST.get('lowerBody')
-        status = request.POST.get('status')
-        days = request.POST.get('days')
-        outdate = request.POST.get('out_time')
-
-        gender_draft = request.session.get('gender_draft', {'gender': 'male'})
-        request.session['draft_order'] = {
-            'gender': gender_draft['gender'],
-            'customer': int(customer_id),
-            'upperBody': Upper,
-            'lowerBody': Lower,
-            'status': status,
-            'days': days,
-            'out_time': outdate,
-        }
-        return redirect('garmentPicker')
-
-    search_query = request.GET.get('q', '').strip()
-    customers_qs = Customer.objects.all().order_by('name')
-
-    if search_query:
-        customers_qs = customers_qs.filter(
-            Q(name__icontains=search_query) | Q(phone__icontains=search_query)
-        )
-
-    paginator = Paginator(customers_qs, 8)  # 8 customers per page
+    query = ""
+    results = None
+    message = ""
+    
+    name = request.POST.get('name', '').strip()
+    phone = request.POST.get('phone', '').strip()
+    
+    form = CustomerForm()
+    paginator = Paginator(customers_qs, 2)  # 8 customers per page
     page_obj = paginator.get_page(request.GET.get('page', 1))
-
-    form = OrderFormAddOrder()
     context = {
         'form': form,
-        'page_obj': page_obj,
-        'search_query': search_query,
+        # 'page_obj': page_obj,
+        # 'search_query': search_query,
     }
     return render(request, "Order/addOrder.html", context=context)
+'''
+
+
+def addOrder(request):
+    if request.method == "POST":
+        customer_id = request.POST.get('customer_id', '').strip()
+        name = request.POST.get('name', '').strip()
+        phone = request.POST.get('phone', '').strip()
+
+        if customer_id:
+            # User clicked an existing profile from the suggestion drop-down!
+            customer = Customer.objects.get(id=customer_id)
+        else:
+            # Profile doesn't exist yet, generate it cleanly!
+            customer = Customer.objects.create(name=name, phone=phone)
+
+    form = CustomerForm()
+    print(form)
+    context = {
+        'form': form,
+    }
+    return render(request, "Order/addOrder.html", context=context)
+
+# def addOrder(request):
+#     if request.method == 'POST':
+#         customer_id = request.POST.get('customer')
+
+#         if customer_id:
+#             customer = get_object_or_404(Customer, pk=customer_id)
+#         else:
+#             name = request.POST.get('q', '').strip()
+#             phone = request.POST.get('phone', '').strip()
+#             if not name or not phone:
+#                 # re-render with an error — see search/pagination code below,
+#                 # just add: context['error'] = "Pick a customer or enter a name and phone."
+#                 ...
+#             customer, _ = Customer.objects.get_or_create(
+#                 phone=phone, defaults={'name': name}
+#             )
+
+#         gender_draft = request.session.get('gender_draft', {'gender': 'male'})
+#         request.session['draft_order'] = {
+#             'gender': gender_draft['gender'],
+#             'customer': customer.id,
+#         }
+#         return redirect('garmentPicker')
+
+#     search_query = request.GET.get('q', '').strip()
+#     customers_qs = Customer.objects.all().order_by('name')
+#     if search_query:
+#         customers_qs = customers_qs.filter(
+#             Q(name__icontains=search_query) | Q(phone__icontains=search_query)
+#         )
+#     paginator = Paginator(customers_qs, 8)
+#     page_obj = paginator.get_page(request.GET.get('page', 1))
+
+#     # NEW: support the live-search fetch from the frontend
+#     if request.GET.get('partial'):
+#         return render(request, 'Order/_customer_results.html', {
+#             'page_obj': page_obj, 'search_query': search_query,
+#         })
+
+#     context = {'page_obj': page_obj, 'search_query': search_query}
+#     return render(request, "Order/addOrder.html", context=context)
 
 def garmentPicker(request):
     draft = request.session.get('draft_order',{})
     garments = getGarmentByGender(draft['gender'])
 
     if request.method == 'POST':
-        print("POST")
         order = OrderFormAddGarment(request.POST)
         if order.is_valid():
             obj = order.save(commit=False)
             obj.out_time = compute_out_time(obj.days)
             obj.save()
+
+            request.session.pop('draft_order', None)
+            request.session.pop('garment', None)
+            request.session.pop('gender_draft', None)
             return redirect('home')
         else:
             print(order.errors)
@@ -124,10 +171,7 @@ def addCloth(request, cloth):
             garment = form.save()             
             formset.instance = garment         
             formset.save()
-            # request.session.pop('draft_order', None)
-            # request.session.pop('garment', None)
-            # request.session.pop('gender_draft', None)
-            # print(garment.id)
+
             request.session['garment'] = {
                 'region' : 'upperBody' if region == 'upper' else 'lowerBody',
                 'garment': garment.id,
@@ -186,3 +230,17 @@ def compute_out_time(days, placed_at=None):
 
     base_noon = placed_at.replace(hour=12, minute=0, second=0, microsecond=0)
     return base_noon + timedelta(days=days)
+
+def liveSearch(request):
+    query = request.GET.get('q', '').strip()
+    results_data = []
+    
+    if query:
+        items = Customer.objects.filter(
+            Q(name__icontains=query) | Q(phone__icontains=query)
+        )[:5]
+        
+        # Include item.id so the front-end can pass it to the hidden input box field form
+        results_data = [{'id': item.id, 'name': item.name, 'phone': item.phone} for item in items]
+        
+    return JsonResponse({'results': results_data})
