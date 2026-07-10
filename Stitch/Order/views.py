@@ -1,6 +1,7 @@
 from django.utils import timezone
 from datetime import timedelta
-
+from django.core.paginator import Paginator
+from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 
 from AuthApp.models import Customer
@@ -44,8 +45,7 @@ def orderGender(request):
         return redirect('addOrder')
     return render(request, "Order/gender.html")
     
-from django.core.paginator import Paginator
-from django.db.models import Q
+
 
 def addOrder(request):
     if request.method == 'POST':
