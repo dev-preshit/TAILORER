@@ -11,6 +11,4 @@ urlpatterns = [
     path("order/add/<str:cloth>", views.addCloth, name = "addCloth"),
     path("garmentPicker/",views.garmentPicker, name="garmentPicker"),
     path("order/cancel/", views.cancelOrder, name="cancelOrder"),
-    path("order/live-search/", views.liveSearch, name="liveSearch"),
-
 ]

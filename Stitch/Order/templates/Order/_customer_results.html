@@ -24,7 +24,7 @@
 {% if page_obj.paginator.num_pages > 1 %}
 <div class="pagination">
     {% if page_obj.has_previous %}
-        <a href="?q={{ search_query }}&page={{ page_obj.previo  us_page_number }}">&laquo; Prev</a>
+        <a href="?q={{ search_query }}&page={{ page_obj.previous_page_number }}">&laquo; Prev</a>
     {% endif %}
     <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
     {% if page_obj.has_next %}

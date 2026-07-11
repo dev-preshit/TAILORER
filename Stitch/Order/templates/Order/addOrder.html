@@ -24,131 +24,144 @@
         </div>
     </nav>
 
-    <div class="form-card">
-        <header class="form-card-header">
-            <h1 id="details-heading" class="page-title">Order details</h1>
-            <p class="page-lead">Who's this order for?</p>
-        </header>
-
-        {% if form.non_field_errors %}
-            <div class="alert alert-error">{{ form.non_field_errors }}</div>
-        {% endif %}
-
-        <form action="{% url 'addOrder' %}" method="POST">
-            {% csrf_token %}
-            {% comment %} {% for field in form %}
-                <div class="field-underline">
-                    {{ field.label_tag }}
-                    {{ field }}
-                    {% if field.help_text %}
-                        <p class="page-lead" style="margin-top:6px;">{{ field.help_text }}</p>
-                    {% endif %}
-                    {% if field.errors %}
-                        <ul class="errorlist">
-                            {% for error in field.errors %}
-                                <li>{{ error }}</li>
-                            {% endfor %}
-                        </ul>
-                    {% endif %}
-                </div>
-            {% endfor %} {% endcomment %}
-
-            <input type="hidden" name="customer_id" id="id_customer_selected" value="">
-
-            <div class="field-underline">
-                <div style="margin-bottom: 15px;">
-                    <label for="id_name">Name:</label>
-                    <input type="text" name="name" id="name" maxlength="50" required autocomplete="off">
-                    {% if form.name.errors %}
-                        <ul class="errorlist">{% for error in form.name.errors %}<li>{{ error }}</li>{% endfor %}</ul>
-                    {% endif %}
-                </div>
-                
-                <div style="margin-bottom: 15px;">
-                    <label for="id_phone">Phone:</label>
-                    <input type="tel" name="phone" id="phone" maxlength="128" required autocomplete="off">
-                    {% if form.phone.errors %}
-                        <ul class="errorlist">{% for error in form.phone.errors %}<li>{{ error }}</li>{% endfor %}</ul>
-                    {% endif %}
-                </div>
-            </div>
-            <div class="form-actions">
-                <a href="{% url 'cancelOrder' %}" class="btn btn-secondary">Cancel</a>
-                <button type="submit" class="btn btn-primary">Continue</button>
-            </div>
-        </form>
-    </div>
-
-    <div class="customer-list" id="resultBox">
-        
-    </div>
-
-    {% if page_obj.paginator.num_pages > 1 %}
-    <div class="pagination">
-        {% if page_obj.has_previous %}
-            <a href="?q={{ search_query }}&page={{ page_obj.previous_page_number }}">&laquo; Prev</a>
-        {% endif %}
-        <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
-        {% if page_obj.has_next %}
-            <a href="?q={{ search_query }}&page={{ page_obj.next_page_number }}">Next &raquo;</a>
-        {% endif %}
-    </div>
+    {% if error %}
+        <div class="alert alert-error" style="max-width:1100px;margin:0 auto 1.5rem;">{{ error }}</div>
     {% endif %}
-</div>
+
+    <div class="order-builder">
+
+        <div class="customer-form-panel form-card">
+            <header class="form-card-header" style="text-align:left;">
+                <h1 id="details-heading" class="page-title">Customer</h1>
+                <p class="page-lead">Search an existing customer, or add a new one.</p>
+            </header>
+
+            <form id="order-details-form" action="{% url 'addOrder' %}" method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="customer" id="id_customer_selected" value="">
+
+                <div class="field-underline">
+                    <label for="customer-query">Customer name</label>
+                    <input
+                        type="text"
+                        id="customer-query"
+                        name="q"
+                        autocomplete="off"
+                        placeholder="Start typing a name or number…"
+                        value="{{ search_query }}"
+                    >
+                </div>
+
+                <div id="selected-chip" class="selected-chip is-hidden">
+                    <i class="fa fa-check-circle" aria-hidden="true"></i>
+                    <span id="selected-chip-text"></span>
+                    <button type="button" class="chip-clear" id="clear-selection">Change</button>
+                </div>
+
+                <div class="field-underline" id="new-customer-phone-field">
+                    <label for="customer-phone">
+                        Phone number <span class="phone-hint">(only for a new customer)</span>
+                    </label>
+                    <input type="tel" id="customer-phone" name="phone" autocomplete="off" placeholder="e.g. 9876543210">
+                </div>
+
+                <div class="form-actions">
+                    <a href="{% url 'cancelOrder' %}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary" id="continue-btn">Continue</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="customer-results-panel">
+            <div class="results-header">
+                <h2>Matching customers</h2>
+                <span class="results-count">{{ page_obj.paginator.count }} total</span>
+            </div>
+
+            <div id="customer-list-wrapper">
+                {% include "Order/_customer_results.html" %}
+            </div>
+        </div>
+
+    </div>
+</section>
 
 <script>
-// Wrap script inside DOMContentLoaded to ensure fields exist before attaching listeners
-document.addEventListener('DOMContentLoaded', () => {
-    // FIXED: Changed element selectors to match 'id_name' and 'id_phone' from the HTML
-    const nameSearch = document.getElementById('id_name');
-    const phoneSearch = document.getElementById('id_phone');
-    const resultBox = document.getElementById('resultBox');
-    const customerHiddenInput = document.getElementById('id_customer_selected');
+(function () {
+    const queryInput = document.getElementById('customer-query');
+    const phoneField = document.getElementById('new-customer-phone-field');
+    const phoneInput = document.getElementById('customer-phone');
+    const hiddenCustomer = document.getElementById('id_customer_selected');
+    const chip = document.getElementById('selected-chip');
+    const chipText = document.getElementById('selected-chip-text');
+    const clearBtn = document.getElementById('clear-selection');
+    const form = document.getElementById('order-details-form');
+    const listWrapper = document.getElementById('customer-list-wrapper');
 
-    if (nameSearch && phoneSearch) {
-        nameSearch.addEventListener('input', (e) => {
-            fetchQuery(e.target.value.trim());
-        });
-
-        phoneSearch.addEventListener('input', (e) => {
-            fetchQuery(e.target.value.trim());
-        });
+    function selectCustomer(el) {
+        listWrapper.querySelectorAll('.customer-row').forEach(r => r.classList.remove('is-selected'));
+        el.classList.add('is-selected');
+        hiddenCustomer.value = el.dataset.customerId;
+        chipText.textContent = el.dataset.customerName + ' · ' + el.dataset.customerPhone;
+        chip.classList.remove('is-hidden');
+        phoneField.classList.add('is-hidden');
+        phoneInput.required = false;
     }
 
-    function fetchQuery(query){
-        console.log('in the fetchQuery:', query); // FIXED: Typo correction from consol.log
-        if (query.length > 0){
-            // FIXED: Path directly matches your dynamic path update
-            fetch(`/order/live-search/?q=${encodeURIComponent(query)}`)
-            .then(response => response.json())
-            .then(data => {
-                // FIXED: Renamed undefined resultsDiv references to your active element resultBox
-                resultBox.style.display = 'block';
-                if (data.results.length > 0) {
-                    resultBox.innerHTML = data.results.map(item => `
-                        <div style="padding: 8px; border-bottom: 1px solid #eee; cursor: pointer;" 
-                             onclick="selectCustomer('${item.id}', '${item.name}', '${item.phone}')">
-                            <strong>${item.name}</strong> <span style="color: #666;">- ${item.phone || 'No Phone'}</span>
-                        </div>
-                    `).join('');
-                } else {
-                    resultBox.innerHTML = `<span style="color: green;">"${query}" not found. Hit 'Continue' to register as a new client profile.</span>`;
-                    if (customerHiddenInput) customerHiddenInput.value = ""; 
-                }
+    function clearSelection() {
+        hiddenCustomer.value = '';
+        chip.classList.add('is-hidden');
+        phoneField.classList.remove('is-hidden');
+        listWrapper.querySelectorAll('.customer-row').forEach(r => r.classList.remove('is-selected'));
+    }
+
+    function bindRows() {
+        listWrapper.querySelectorAll('.customer-row').forEach(row => {
+            row.addEventListener('click', () => selectCustomer(row));
+            row.addEventListener('keydown', e => {
+                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectCustomer(row); }
             });
-        } else {
-            resultBox.style.display = 'none';
+        });
+        // Pagination links inside the swapped partial should also swap, not reload the page.
+        listWrapper.querySelectorAll('.pagination a').forEach(link => {
+            link.addEventListener('click', e => {
+                e.preventDefault();
+                fetchResults(link.href + '&partial=1');
+            });
+        });
+    }
+
+    function fetchResults(url) {
+        fetch(url)
+            .then(res => res.text())
+            .then(html => {
+                listWrapper.innerHTML = html;
+                bindRows();
+            })
+            .catch(() => {});
+    }
+
+    clearBtn.addEventListener('click', clearSelection);
+
+    let debounceTimer;
+    queryInput.addEventListener('input', function () {
+        clearTimeout(debounceTimer);
+        clearSelection();
+
+        debounceTimer = setTimeout(function () {
+            const q = encodeURIComponent(queryInput.value.trim());
+            fetchResults(`{% url 'addOrder' %}?q=${q}&partial=1`);
+        }, 350);
+    });
+
+    form.addEventListener('submit', function (e) {
+        if (!hiddenCustomer.value && !phoneInput.value.trim()) {
+            e.preventDefault();
+            alert('Select an existing customer, or enter a phone number to add a new one.');
         }
-    }
-    
-    // Globally exposed window module function to allow inline HTML onclick executions
-    window.selectCustomer = function(id, name, phone) {
-        if (nameSearch) nameSearch.value = name;
-        if (phoneSearch) phoneSearch.value = phone;
-        if (customerHiddenInput) customerHiddenInput.value = id; 
-        if (resultBox) resultBox.style.display = 'none'; 
-    }
-});
-</script>   
-</section>
+    });
+
+    bindRows();
+})();
+</script>
 {% endblock content %}
