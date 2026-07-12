@@ -48,6 +48,7 @@ class Options(models.Model):
 
 class LowerBody(models.Model):
     length = models.IntegerField(default=0)
+    waist = models.IntegerField(default=0)
     hips = models.IntegerField(default=0)
     thigh = models.IntegerField(default=0)
     knee = models.IntegerField(default=0)

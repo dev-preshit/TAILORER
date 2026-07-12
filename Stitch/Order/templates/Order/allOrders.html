@@ -37,7 +37,7 @@
                         <td class="ledger-mono">{{ order.customer.phone }}</td>
                         <td>{{ order.customer.gender }}</td>
                         <td><span class="status-badge status-{{ order.status|lower }}">{{ order.status }}</span></td>
-                        <td class="ledger-mono days-count{% if order.status == 'Urgent' %} is-urgent{% endif %}">{{ order.days }}</td>
+                        <td class="ledger-mono days-count{% if order.urgent == 'Ture' %} is-urgent{% endif %}">{{ order.days }}</td>
                         <td class="ledger-mono">{{ order.out_time|date:"M j, Y" }}</td>
                         <td>
                             <div class="action-btns">

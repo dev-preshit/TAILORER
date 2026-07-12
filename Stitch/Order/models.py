@@ -7,7 +7,6 @@ from Cloth.models import *
 orderstatus = [
     ("Confirmed", "Confirmed"),
     ("Processing", "Processing"),
-    ("Urgent", "Urgent"),
     ("Complated", "Complated"),
     ("Delivered", "Delivered"),
     ("Cenceled", "Cenceled"),
@@ -15,13 +14,19 @@ orderstatus = [
 
 class Order(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
-    upperBody = models.ForeignKey(UpperBody, on_delete=models.CASCADE, null=True, blank=True)
-    lowerBody = models.ForeignKey(LowerBody, on_delete=models.CASCADE, null=True, blank=True)
-    status = models.CharField(max_length=20, choices=orderstatus, default="New")
+    status = models.CharField(max_length=20, choices=orderstatus, default="Confirmed")
     in_time = models.DateTimeField(auto_now_add=True)
     days = models.PositiveIntegerField(default=7, help_text="Days to complete the order")
     out_time = models.DateTimeField(null=True, blank=True)
+    urgent = models.BooleanField(default=False)
 
     def __str__(self):
         return self.customer.name
-    
+
+class OrderTopItem(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='tops')
+    upper_body = models.ForeignKey(UpperBody, on_delete=models.CASCADE)
+
+class OrderBottomItem(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='bottoms')
+    lower_body = models.ForeignKey(LowerBody, on_delete=models.CASCADE)

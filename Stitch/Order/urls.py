@@ -3,12 +3,11 @@ from Order import views
 
 
 urlpatterns = [
-    path("", views.home, name="home"),
-    path("order/", views.getAllOrders, name="allOrders"),
-    path("order/add/", views.addOrder, name = "addOrder"),
-    path("order/gender/", views.orderGender, name="orderGender"),
-    path("order/<int:pk>/", views.getOrder, name = "order"),
-    path("order/add/<str:cloth>", views.addCloth, name = "addCloth"),
+    path("", views.getAllOrders, name="allOrders"),
+    path("add/", views.addOrder, name = "addOrder"),
+    path("gender/", views.orderGender, name="orderGender"),
+    path("<int:pk>/", views.getOrder, name = "order"),
+    path("add/<str:cloth>", views.addCloth, name = "addCloth"),
     path("garmentPicker/",views.garmentPicker, name="garmentPicker"),
-    path("order/cancel/", views.cancelOrder, name="cancelOrder"),
+    path("cancel/", views.cancelOrder, name="cancelOrder"),
 ]

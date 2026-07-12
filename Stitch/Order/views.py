@@ -5,9 +5,10 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 
 from AuthApp.models import Customer
-from Order.models import Order
+from Order.models import Order, OrderBottomItem, OrderTopItem
 from Cloth.forms import LowerBodyForm, LowerOptionsFormSet, UpperBodyForm, UpperOptionsFormSet
-from .forms import OrderFormAddGarment
+from Cloth.models import LowerBody, UpperBody
+from .forms import OrderBottomItemForm, OrderFormAddGarment, OrderTopItemForm
 from Cloth.constants import GARMENT_TYPES
 
 
@@ -17,7 +18,7 @@ def home(request):
     orders = Order.objects.select_related('customer').order_by('-in_time')
     context = {
         'order_count': orders.count(),
-        'urgent_count': orders.filter(status='Urgent').count(),
+        'urgent_count': orders.filter(urgent=True).count(),
         'customer_count': Customer.objects.count(),
         'recent_orders': orders[:5],
     }
@@ -90,36 +91,40 @@ def addOrder(request):
     return render(request, "Order/addOrder.html", context=context)
 
 def garmentPicker(request):
-    draft = request.session.get('draft_order',{})
-    customer_name = Customer.objects.get(id = draft['customer'])
+    draft = request.session.get('draft_order', {})
+    if not draft:
+        return redirect('addOrder')
+
+    customer_name = Customer.objects.get(id=draft['customer'])
     garments = getGarmentByGender(draft['gender'])
+    cart = request.session.get('cart_items', [])
+    form = OrderFormAddGarment()
 
     if request.method == 'POST':
-        order = OrderFormAddGarment(request.POST)
-        print(request.POST)
-        if order.is_valid():
-            obj = order.save(commit=False)
-            obj.customer = customer_name
-            obj.out_time = compute_out_time(obj.days)
-            obj.save()
+        if not cart:
+            error = "Add at least one garment before finalizing the order."
+        else:
+            days = int(request.POST.get('days', 7))
+            obj = Order.objects.create(
+                customer_id=draft['customer'],
+                days=days,
+                out_time=compute_out_time(days),
+                urgent = is_urgent(days)
+            )
+            save_order_garments(request, obj)
 
             request.session.pop('draft_order', None)
-            request.session.pop('garment', None)
             request.session.pop('gender_draft', None)
             return redirect('home')
-        else:
-            print(order.errors)
-            form = order
     else:
-        draft_garment = request.session.get('garment',{})
-        if draft_garment:
-            draft[draft_garment['region']] = int(draft_garment['garment'])
-        print(draft)
-        form = OrderFormAddGarment(initial=draft)
+        error = None
+
     context = {
-        'customer' : customer_name.name,
-        'garments' : garments,
-        'form' : form,
+        'customer': customer_name.name,
+        'garments': garments,
+        'cart': cart,
+        'error': error,
+        'form' : form
     }
     return render(request, 'Order/garment_picker.html', context=context)
 
@@ -134,35 +139,59 @@ def addCloth(request, cloth):
             garment = form.save()             
             formset.instance = garment         
             formset.save()
+            
+            cart = request.session.get('cart_items',[])
+            if cart:
+                cart.append({
+                    'region': 'upper' if region == 'upper' else 'lower',
+                    'garment': garment.id,
+                })
+                request.session['cart_items'] = cart
+            else:
+                request.session['cart_items'] = [{
+                        'region' : 'upper' if region == 'upper' else 'lower',
+                        'garment': garment.id,
+                    }]
+            print(cart)
 
-            request.session['garment'] = {
-                'region' : 'upperBody' if region == 'upper' else 'lowerBody',
-                'garment': garment.id,
-            }               
             return redirect('garmentPicker')
     else:
         form = get_garment_form(cloth, region)
         formset = FormSetClass()
+        
 
     context = {
         'cloth': cloth,
         'form': form,
         'formset': formset,
+        
     }
     return render(request, 'Order/addMeasurement.html', context=context)
 
 def cancelOrder(request):
+    cart = request.session.get('cart_items', [])
+    for item in cart:
+        if item['region'] == 'upper':
+            UpperBody.objects.filter(pk=item['garment']).delete()
+        else:
+            LowerBody.objects.filter(pk=item['garment']).delete()
+    request.session.pop('cart_items', None)
     request.session.pop('draft_order', None)
-    request.session.pop('garment', None)
     request.session.pop('gender_draft', None)
     return redirect('home')
-        
 
 def get_garment_form(cloth_type, region, data=None):
+    print(data)
     if region == 'upper':
         return UpperBodyForm(cloth_type=cloth_type, data=data)
     else:
         return LowerBodyForm(cloth_type=cloth_type, data=data)
+    
+def get_garment_order_form(region, data=None):
+    if region == 'upper':
+        return OrderTopItemForm(data=data)
+    else:
+        return OrderBottomItemForm(data=data)
 
 def getGarmentByGender(gender):
     garments = []
@@ -193,3 +222,17 @@ def compute_out_time(days, placed_at=None):
 
     base_noon = placed_at.replace(hour=12, minute=0, second=0, microsecond=0)
     return base_noon + timedelta(days=days)
+
+def is_urgent(days):
+    return True if days <= 2 else False
+
+def save_order_garments(request,obj):
+    cart = request.session.get('cart_items',[])
+    for item in cart:
+        if item['region'] == 'upper':
+            OrderTopItem.objects.create(order=obj, upper_body_id=int(item['garment']))
+
+        else:
+            OrderBottomItem.objects.create(order=obj, lower_body_id=int(item['garment']))
+
+    request.session.pop('cart_items',None)
