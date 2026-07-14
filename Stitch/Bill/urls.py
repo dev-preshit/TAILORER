@@ -3,6 +3,7 @@ from Bill import views
 
 
 urlpatterns = [
-    path("", views.checkout, name="checkout"),
+    path("<int:id>", views.checkout, name="checkout"),
+
 
 ]

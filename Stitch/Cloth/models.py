@@ -59,6 +59,9 @@ class LowerBody(models.Model):
 
     def __str__(self):
         return self.clothType
+    
+    def get_price(self):
+        return ClothPrice.objects.get(cloth_type=self.clothType).base_price
 
 class UpperBody(models.Model):
     length = models.IntegerField(default=0)
@@ -84,6 +87,9 @@ class UpperBody(models.Model):
 
     def __str__(self):
         return self.clothType
+    
+    def get_price(self):
+        return ClothPrice.objects.get(cloth_type=self.clothType).base_price
     
 class ClothPrice(models.Model):
     cloth_type = models.CharField(max_length=20, choices=allClothsChoice, default=" ", unique=True)

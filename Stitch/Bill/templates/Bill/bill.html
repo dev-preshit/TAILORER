@@ -1,0 +1,13 @@
+
+{{order.customer}}<br/>
+{{order.status}}<br/>
+{{order.in_time}}<br/>
+{{order.days}}<br/>
+{{order.out_time}}<br/>
+{{order.urgent}}<br/>
+{% for tops in upperGarments %}
+    {{tops.upper_body}}<br/>
+{% endfor %}
+{% for bottoms in bottomGarments %}
+    {{bottoms.lower_body}}<br/>
+{% endfor %}

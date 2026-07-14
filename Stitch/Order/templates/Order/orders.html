@@ -1,7 +1,27 @@
 {% extends "base.html" %}
 
 {% block content %}
-        <div>
-            {{order}}
-        </div>
+        <h2>Order Details</h2>
+<p>Customer: {{ order.customer.name }}</p>
+
+<h3>Upper Garments</h3>
+<ul>
+  {% for item in upperGarments %}
+    <!-- item is OrderTopItem -> item.upper_body gets the UpperBody model fields -->
+
+    <li>{{*/put the field name here/*}} {{ item.upper_body.{{measurement}} }}</li>
+  {% empty %}
+    <li>No upper garments.</li>
+  {% endfor %}
+</ul>
+
+<h3>Bottom Garments</h3>
+<ul>
+  {% for item in bottomGarments %}
+    <!-- item is OrderBottomItem -> item.lower_body gets the LowerBody model fields -->
+    <li>{{*/put the field name here/*}} ({{ item.lower_body.{{measurement}} }})</li>
+  {% empty %}
+    <li>No bottom garments.</li>
+  {% endfor %}
+</ul>
 {% endblock content %}

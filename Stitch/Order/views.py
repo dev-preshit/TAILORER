@@ -29,15 +29,33 @@ def getAllOrders(request):
     orders = Order.objects.all()
     return render(request, 'Order/allOrders.html', context= {'orders' : orders})
 
-def getOrder(request,pk):
-    order = get_object_or_404(Order, pk=pk)
-    return render(request, 'Order/orders.html', context= {'order' : order})
+def getOrder(request,id):
+    order = get_object_or_404(
+    Order.objects.prefetch_related(
+        'tops__upper_body', 
+        'bottoms__lower_body'
+        ), 
+        id=id
+    )
+
+    upperGarments = order.tops.all()
+    bottomGarments = order.bottoms.all()
+
+    context = {
+        'order': order,
+        'upperGarments': upperGarments,
+        'bottomGarments': bottomGarments,
+    }
+    return render(request, 'Order/orders.html', context=context)
 
 
 
 # ____________add order flow_______________
 
 def orderGender(request):
+    request.session.pop('cart_items', None)
+    request.session.pop('draft_order', None)
+    request.session.pop('gender_draft', None)
     if request.method == "POST":
         gender = request.POST.get('gender')
         request.session['gender_draft'] = {
@@ -234,5 +252,4 @@ def save_order_garments(request,obj):
 
         else:
             OrderBottomItem.objects.create(order=obj, lower_body_id=int(item['garment']))
-
     request.session.pop('cart_items',None)
